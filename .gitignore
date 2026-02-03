@@ -1,4 +1,28 @@
+# Dependencies
 node_modules/
+
+# Environment variables (IMPORTANT - Contains secrets!)
 .env
-.DS_Store
+
+# Database
+*.db
+printmitra.db
+
+# Uploads
+uploads/
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
