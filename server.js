@@ -1,9 +1,9 @@
-// server.js - Main Express Server
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsPromises = require('fs').promises;
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { PDFDocument } = require('pdf-lib');
@@ -12,35 +12,31 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Database Setup
 const Database = require('./database');
 const db = new Database();
 
-// Printer Manager
 const PrinterManager = require('./printerManager');
-const printerManager = new PrinterManager();
+const printerManager = new PrinterManager(true);
 
-// Razorpay Configuration
 const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'YOUR_RAZORPAY_KEY_HERE',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'YOUR_RAZORPAY_SECRET_HERE'
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_demo',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'demo_secret'
 });
 
-// File Upload Configuration
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, 'uploads');
-        fs.mkdir(uploadDir, { recursive: true })
-            .then(() => cb(null, uploadDir))
-            .catch(err => cb(err));
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
     },
-    filename: (req, file, cb) => {
+    filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
@@ -53,28 +49,60 @@ const upload = multer({
         const allowedTypes = [
             'application/pdf',
             'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/png',
-            'image/jpeg'
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only PDF, DOC, DOCX, PNG, JPG, and JPEG are allowed.'));
+            cb(new Error('Invalid file type. Only PDF, DOC, and DOCX are allowed.'));
         }
     }
 });
 
-// ==================== ROUTES ====================
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✓ Created uploads directory');
+}
 
-// Get Razorpay Configuration
+app.get('/', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>PrintMitra API</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
+                .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                h1 { color: #667eea; }
+                .status { display: inline-block; padding: 5px 15px; border-radius: 20px; background: #4CAF50; color: white; font-weight: bold; }
+                .endpoint { background: #f8f9ff; padding: 10px; margin: 10px 0; border-left: 3px solid #667eea; font-family: monospace; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>📄 PrintMitra API Server</h1>
+                <p><span class="status">ONLINE</span></p>
+                <h3>Available Endpoints:</h3>
+                <div class="endpoint">GET  /api/status</div>
+                <div class="endpoint">GET  /api/config</div>
+                <div class="endpoint">POST /api/upload</div>
+                <div class="endpoint">POST /api/create-order</div>
+                <div class="endpoint">POST /api/verify-payment</div>
+                <p><strong>Frontend:</strong> <a href="/index.html">Open Application</a></p>
+                <p><strong>Port:</strong> ${PORT}</p>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
 app.get('/api/config', (req, res) => {
     res.json({
-        razorpayKey: process.env.RAZORPAY_KEY_ID || 'YOUR_RAZORPAY_KEY_HERE'
+        razorpayKey: process.env.RAZORPAY_KEY_ID || 'rzp_test_demo'
     });
 });
 
-// Health Check & Printer Status
 app.get('/api/status', async (req, res) => {
     try {
         const printerStatus = await printerManager.getStatus();
@@ -90,6 +118,7 @@ app.get('/api/status', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Status check error:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -97,31 +126,39 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
-// Upload and Analyze Document
 app.post('/api/upload', upload.single('document'), async (req, res) => {
+    console.log('\n=== UPLOAD REQUEST ===');
+    
     try {
         if (!req.file) {
+            console.log('✗ No file in request');
             return res.status(400).json({
                 success: false,
                 error: 'No file uploaded'
             });
         }
 
+        console.log('✓ File received:', req.file.originalname);
+        console.log('✓ Size:', req.file.size, 'bytes');
+
         const filePath = req.file.path;
         let pageCount = 0;
 
-        // Count pages
         if (req.file.mimetype === 'application/pdf') {
-            pageCount = await countPDFPages(filePath);
-        } else if (req.file.mimetype.startsWith('image/')) {
-            // Images are treated as single-page documents
-            pageCount = 1;
+            try {
+                pageCount = await countPDFPages(filePath);
+                console.log('✓ Page count:', pageCount);
+            } catch (error) {
+                console.log('⚠ Page count failed, using estimate');
+                const fileSizeMB = req.file.size / (1024 * 1024);
+                pageCount = Math.max(1, Math.ceil(fileSizeMB / 0.1));
+            }
         } else {
-            // For DOC/DOCX, estimate or convert first
-            pageCount = Math.floor(Math.random() * 20) + 1; // Placeholder
+            const fileSizeMB = req.file.size / (1024 * 1024);
+            pageCount = Math.max(1, Math.ceil(fileSizeMB / 0.05));
+            console.log('✓ Estimated pages:', pageCount);
         }
 
-        // Store file info in database
         const fileInfo = {
             fileId: req.file.filename,
             originalName: req.file.originalname,
@@ -133,6 +170,7 @@ app.post('/api/upload', upload.single('document'), async (req, res) => {
         };
 
         await db.storeFileInfo(fileInfo);
+        console.log('✓ Stored in database');
 
         res.json({
             success: true,
@@ -144,8 +182,10 @@ app.post('/api/upload', upload.single('document'), async (req, res) => {
             }
         });
 
+        console.log('=== UPLOAD SUCCESS ===\n');
+
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('✗ UPLOAD ERROR:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
@@ -153,8 +193,9 @@ app.post('/api/upload', upload.single('document'), async (req, res) => {
     }
 });
 
-// Create Razorpay Order
 app.post('/api/create-order', async (req, res) => {
+    console.log('\n=== CREATE ORDER ===');
+    
     try {
         const { fileId, printSettings, email, phone } = req.body;
 
@@ -174,19 +215,17 @@ app.post('/api/create-order', async (req, res) => {
         }
 
         const amount = calculateAmount(fileInfo.page_count, printSettings);
+        console.log('✓ Amount:', amount, 'INR');
 
         const options = {
             amount: amount * 100,
             currency: 'INR',
             receipt: `receipt_${Date.now()}`,
-            notes: {
-                fileId: fileId,
-                email: email,
-                phone: phone
-            }
+            notes: { fileId, email, phone }
         };
 
         const order = await razorpay.orders.create(options);
+        console.log('✓ Order created:', order.id);
 
         await db.createOrder({
             orderId: order.id,
@@ -207,8 +246,10 @@ app.post('/api/create-order', async (req, res) => {
             }
         });
 
+        console.log('=== ORDER SUCCESS ===\n');
+
     } catch (error) {
-        console.error('Order creation error:', error);
+        console.error('✗ ORDER ERROR:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
@@ -216,18 +257,15 @@ app.post('/api/create-order', async (req, res) => {
     }
 });
 
-// Verify Payment and Send to Printer
 app.post('/api/verify-payment', async (req, res) => {
+    console.log('\n=== VERIFY PAYMENT ===');
+    
     try {
-        const {
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature
-        } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         const body = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'demo_secret')
             .update(body.toString())
             .digest('hex');
 
@@ -238,14 +276,9 @@ app.post('/api/verify-payment', async (req, res) => {
             });
         }
 
-        const order = await db.getOrder(razorpay_order_id);
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                error: 'Order not found'
-            });
-        }
+        console.log('✓ Signature verified');
 
+        const order = await db.getOrder(razorpay_order_id);
         const fileInfo = await db.getFileInfo(order.file_id);
         const collectionCode = Math.floor(1000 + Math.random() * 9000);
 
@@ -278,8 +311,11 @@ app.post('/api/verify-payment', async (req, res) => {
             }
         });
 
+        console.log('✓ Collection code:', collectionCode);
+        console.log('=== PAYMENT SUCCESS ===\n');
+
     } catch (error) {
-        console.error('Payment verification error:', error);
+        console.error('✗ PAYMENT ERROR:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
@@ -287,16 +323,11 @@ app.post('/api/verify-payment', async (req, res) => {
     }
 });
 
-// Get Order Status
 app.get('/api/order/:orderId', async (req, res) => {
     try {
         const order = await db.getOrder(req.params.orderId);
-        
         if (!order) {
-            return res.status(404).json({
-                success: false,
-                error: 'Order not found'
-            });
+            return res.status(404).json({ success: false, error: 'Order not found' });
         }
 
         let printStatus = null;
@@ -306,76 +337,44 @@ app.get('/api/order/:orderId', async (req, res) => {
 
         res.json({
             success: true,
-            order: {
-                ...order,
-                printStatus: printStatus
-            }
+            order: { ...order, printStatus }
         });
-
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Get Transaction History
 app.get('/api/transactions', async (req, res) => {
     try {
         const { startDate, endDate, status } = req.query;
-        const transactions = await db.getTransactions({
-            startDate,
-            endDate,
-            status
-        });
-
-        res.json({
-            success: true,
-            transactions: transactions
-        });
-
+        const transactions = await db.getTransactions({ startDate, endDate, status });
+        res.json({ success: true, transactions });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ==================== HELPER FUNCTIONS ====================
-
 async function countPDFPages(pdfPath) {
-    try {
-        const pdfBuffer = await fs.readFile(pdfPath);
-        const pdfDoc = await PDFDocument.load(pdfBuffer);
-        return pdfDoc.getPageCount();
-    } catch (error) {
-        console.error('Error counting PDF pages:', error);
-        throw new Error('Failed to count PDF pages');
-    }
+    const pdfBuffer = await fsPromises.readFile(pdfPath);
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    return pdfDoc.getPageCount();
 }
 
 function calculateAmount(pageCount, settings) {
-    const PRICING = {
-        bw: 2,
-        color: 8
-    };
-
+    const PRICING = { bw: 2, color: 8 };
     const pricePerPage = PRICING[settings.color] || PRICING.bw;
     const copies = settings.copies || 1;
-    
     let totalPages = pageCount;
+    
     if (settings.pageRange) {
         totalPages = calculatePageRangeCount(settings.pageRange, pageCount);
     }
-
+    
     return totalPages * copies * pricePerPage;
 }
 
 function calculatePageRangeCount(pageRange, maxPages) {
     if (!pageRange) return maxPages;
-
     const ranges = pageRange.split(',');
     let count = 0;
 
@@ -393,20 +392,18 @@ function calculatePageRangeCount(pageRange, maxPages) {
     return Math.max(count, 0);
 }
 
-// Cleanup old files
 async function cleanupOldFiles() {
     try {
-        const uploadDir = path.join(__dirname, 'uploads');
-        const files = await fs.readdir(uploadDir);
+        const files = await fsPromises.readdir(uploadsDir);
         const now = Date.now();
         const maxAge = 24 * 60 * 60 * 1000;
 
         for (const file of files) {
-            const filePath = path.join(uploadDir, file);
-            const stats = await fs.stat(filePath);
+            const filePath = path.join(uploadsDir, file);
+            const stats = await fsPromises.stat(filePath);
             if (now - stats.mtimeMs > maxAge) {
-                await fs.unlink(filePath);
-                console.log(`Deleted old file: ${file}`);
+                await fsPromises.unlink(filePath);
+                console.log('🗑️ Deleted:', file);
             }
         }
     } catch (error) {
@@ -416,50 +413,47 @@ async function cleanupOldFiles() {
 
 setInterval(cleanupOldFiles, 60 * 60 * 1000);
 
-// Error handling middleware
 app.use((error, req, res, next) => {
     console.error('Error:', error);
-    res.status(500).json({
-        success: false,
-        error: error.message || 'Internal server error'
-    });
+    res.status(500).json({ success: false, error: error.message });
 });
 
-// Start server
-app.listen(PORT, () => {
+app.use((req, res) => {
+    res.status(404).json({ success: false, error: 'Endpoint not found' });
+});
+
+const server = app.listen(PORT, () => {
     console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║           PrintMitra Server Started                   ║
 ╠═══════════════════════════════════════════════════════╣
 ║  Port: ${PORT}                                        
 ║  Environment: ${process.env.NODE_ENV || 'development'}                              
-║  Razorpay: ${process.env.RAZORPAY_KEY_ID ? 'Configured ✓' : 'Not Configured ✗'}                       
+║  Razorpay: ${process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_demo' ? 'Configured ✓' : 'Demo Mode'}
+║  Printer: DEMO (Simulated)                            
 ╠═══════════════════════════════════════════════════════╣
-║  Frontend URL: http://localhost:${PORT}               
-║  API URL: http://localhost:${PORT}/api                
+║  Frontend: http://localhost:${PORT}                   
+║  API: http://localhost:${PORT}/api                    
 ╠═══════════════════════════════════════════════════════╣
-║  Endpoints:                                           ║
-║  - GET  /api/status                                   ║
-║  - GET  /api/config                                   ║
-║  - POST /api/upload                                   ║
-║  - POST /api/create-order                             ║
-║  - POST /api/verify-payment                           ║
-║  - GET  /api/order/:orderId                           ║
-║  - GET  /api/transactions                             ║
+║  Ready to accept print jobs!                          ║
 ╚═══════════════════════════════════════════════════════╝
     `);
 });
 
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received. Shutting down gracefully...');
-    db.close();
-    process.exit(0);
+    console.log('\n🛑 Shutting down...');
+    server.close(() => {
+        db.close();
+        process.exit(0);
+    });
 });
 
 process.on('SIGINT', () => {
-    console.log('SIGINT received. Shutting down gracefully...');
-    db.close();
-    process.exit(0);
+    console.log('\n🛑 Shutting down...');
+    server.close(() => {
+        db.close();
+        process.exit(0);
+    });
 });
 
 module.exports = app;

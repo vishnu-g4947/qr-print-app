@@ -1,4 +1,3 @@
-// database.js - Database Manager
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
@@ -8,9 +7,9 @@ class Database {
             path.join(__dirname, 'printmitra.db'),
             (err) => {
                 if (err) {
-                    console.error('Database connection error:', err);
+                    console.error('Database error:', err);
                 } else {
-                    console.log('Connected to SQLite database');
+                    console.log('✓ Database connected');
                     this.initialize();
                 }
             }
@@ -52,21 +51,6 @@ class Database {
                 )
             `);
 
-            this.db.run(`
-                CREATE TABLE IF NOT EXISTS print_jobs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    job_id TEXT UNIQUE NOT NULL,
-                    order_id TEXT NOT NULL,
-                    printer_name TEXT,
-                    status TEXT DEFAULT 'queued',
-                    pages_printed INTEGER DEFAULT 0,
-                    started_at DATETIME,
-                    completed_at DATETIME,
-                    error_message TEXT,
-                    FOREIGN KEY (order_id) REFERENCES orders(order_id)
-                )
-            `);
-
             this.db.run('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)');
             this.db.run('CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at)');
         });
@@ -75,25 +59,16 @@ class Database {
     async checkConnection() {
         return new Promise((resolve, reject) => {
             this.db.get('SELECT 1', (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve('connected');
-                }
+                if (err) reject(err);
+                else resolve('connected');
             });
         });
     }
 
     async storeFileInfo(fileInfo) {
         return new Promise((resolve, reject) => {
-            const sql = `
-                INSERT INTO files (file_id, original_name, file_path, mime_type, size, page_count)
-                VALUES (?, ?, ?, ?, ?, ?)
-            `;
-            this.db.run(
-                sql,
-                [fileInfo.fileId, fileInfo.originalName, fileInfo.filePath, 
-                 fileInfo.mimeType, fileInfo.size, fileInfo.pageCount],
+            const sql = `INSERT INTO files (file_id, original_name, file_path, mime_type, size, page_count) VALUES (?, ?, ?, ?, ?, ?)`;
+            this.db.run(sql, [fileInfo.fileId, fileInfo.originalName, fileInfo.filePath, fileInfo.mimeType, fileInfo.size, fileInfo.pageCount],
                 function(err) {
                     if (err) reject(err);
                     else resolve(this.lastID);
@@ -104,27 +79,17 @@ class Database {
 
     async getFileInfo(fileId) {
         return new Promise((resolve, reject) => {
-            this.db.get(
-                'SELECT * FROM files WHERE file_id = ?',
-                [fileId],
-                (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                }
-            );
+            this.db.get('SELECT * FROM files WHERE file_id = ?', [fileId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
         });
     }
 
     async createOrder(orderData) {
         return new Promise((resolve, reject) => {
-            const sql = `
-                INSERT INTO orders (order_id, file_id, amount, print_settings, email, phone, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-            this.db.run(
-                sql,
-                [orderData.orderId, orderData.fileId, orderData.amount,
-                 orderData.printSettings, orderData.email, orderData.phone, orderData.status],
+            const sql = `INSERT INTO orders (order_id, file_id, amount, print_settings, email, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            this.db.run(sql, [orderData.orderId, orderData.fileId, orderData.amount, orderData.printSettings, orderData.email, orderData.phone, orderData.status],
                 function(err) {
                     if (err) reject(err);
                     else resolve(this.lastID);
@@ -135,14 +100,10 @@ class Database {
 
     async getOrder(orderId) {
         return new Promise((resolve, reject) => {
-            this.db.get(
-                'SELECT * FROM orders WHERE order_id = ?',
-                [orderId],
-                (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                }
-            );
+            this.db.get('SELECT * FROM orders WHERE order_id = ?', [orderId], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
         });
     }
 
@@ -151,7 +112,6 @@ class Database {
             const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
             const values = Object.values(updates);
             values.push(orderId);
-
             const sql = `UPDATE orders SET ${fields} WHERE order_id = ?`;
             this.db.run(sql, values, function(err) {
                 if (err) reject(err);
@@ -162,24 +122,17 @@ class Database {
 
     async getTransactions(filters = {}) {
         return new Promise((resolve, reject) => {
-            let sql = `
-                SELECT o.*, f.original_name, f.page_count
-                FROM orders o
-                JOIN files f ON o.file_id = f.file_id
-                WHERE 1=1
-            `;
+            let sql = `SELECT o.*, f.original_name, f.page_count FROM orders o JOIN files f ON o.file_id = f.file_id WHERE 1=1`;
             const params = [];
 
             if (filters.startDate) {
                 sql += ' AND o.created_at >= ?';
                 params.push(filters.startDate);
             }
-
             if (filters.endDate) {
                 sql += ' AND o.created_at <= ?';
                 params.push(filters.endDate);
             }
-
             if (filters.status) {
                 sql += ' AND o.status = ?';
                 params.push(filters.status);

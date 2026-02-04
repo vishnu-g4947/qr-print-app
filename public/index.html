@@ -6,12 +6,7 @@
     <title>PrintMitra - Self-Service Printing</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,7 +16,6 @@
             align-items: center;
             padding: 20px;
         }
-
         .container {
             background: white;
             border-radius: 20px;
@@ -30,7 +24,6 @@
             width: 100%;
             overflow: hidden;
         }
-
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -38,17 +31,8 @@
             text-align: center;
             position: relative;
         }
-
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
+        .header h1 { font-size: 32px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
         .status-indicator {
             position: absolute;
             top: 15px;
@@ -61,7 +45,6 @@
             border-radius: 20px;
             font-size: 12px;
         }
-
         .status-dot {
             width: 8px;
             height: 8px;
@@ -69,34 +52,12 @@
             background: #4CAF50;
             animation: pulse 2s infinite;
         }
-
-        .status-dot.offline {
-            background: #f44336;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .step {
-            display: none;
-        }
-
-        .step.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        .status-dot.offline { background: #f44336; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .content { padding: 30px; }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .upload-area {
             border: 3px dashed #667eea;
             border-radius: 15px;
@@ -106,75 +67,19 @@
             transition: all 0.3s ease;
             background: #f8f9ff;
         }
-
-        .upload-area:hover {
-            border-color: #764ba2;
-            background: #f0f2ff;
-        }
-
-        .upload-area.dragover {
-            background: #e8ebff;
-            border-color: #764ba2;
-        }
-
-        .upload-area.uploading {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .file-info {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-        }
-
-        .file-info.show {
-            display: block;
-        }
-
-        .file-name {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .option-group {
-            margin: 20px 0;
-        }
-
-        .option-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .radio-option {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .radio-option input[type="radio"] {
-            display: none;
-        }
-
+        .upload-area:hover { border-color: #764ba2; background: #f0f2ff; }
+        .upload-area.dragover { background: #e8ebff; border-color: #764ba2; }
+        .upload-area.uploading { pointer-events: none; opacity: 0.6; }
+        .upload-icon { font-size: 48px; margin-bottom: 15px; }
+        input[type="file"] { display: none; }
+        .file-info { background: #f8f9ff; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; }
+        .file-info.show { display: block; }
+        .file-name { font-weight: 600; color: #667eea; margin-bottom: 5px; }
+        .option-group { margin: 20px 0; }
+        .option-group label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; }
+        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        .radio-option { flex: 1; min-width: 120px; }
+        .radio-option input[type="radio"] { display: none; }
         .radio-option label {
             display: block;
             padding: 15px;
@@ -185,30 +90,15 @@
             transition: all 0.3s ease;
             font-weight: 500;
         }
-
         .radio-option input[type="radio"]:checked + label {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
-
-        .radio-option label:hover {
-            border-color: #667eea;
-        }
-
-        .input-group {
-            margin: 15px 0;
-        }
-
-        .input-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .input-group input,
-        .input-group select {
+        .radio-option label:hover { border-color: #667eea; }
+        .input-group { margin: 15px 0; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .input-group input, .input-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -216,27 +106,9 @@
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
-
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .price-summary {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            font-size: 15px;
-        }
-
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #667eea; }
+        .price-summary { background: #f8f9ff; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .price-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 15px; }
         .price-row.total {
             border-top: 2px solid #667eea;
             padding-top: 10px;
@@ -245,7 +117,6 @@
             font-size: 18px;
             color: #667eea;
         }
-
         .btn {
             width: 100%;
             padding: 15px;
@@ -257,38 +128,18 @@
             transition: all 0.3s ease;
             margin-top: 10px;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-
-        .btn-primary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #f8f9ff;
-        }
-
-        .success-animation {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: white; color: #667eea; border: 2px solid #667eea; }
+        .btn-secondary:hover { background: #f8f9ff; }
+        .success-animation { text-align: center; padding: 40px 20px; }
         .checkmark {
             width: 80px;
             height: 80px;
@@ -300,7 +151,6 @@
             box-shadow: inset 0px 0px 0px #4CAF50;
             animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
         }
-
         .checkmark-circle {
             stroke-dasharray: 166;
             stroke-dashoffset: 166;
@@ -310,27 +160,15 @@
             fill: none;
             animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
         }
-
         .checkmark-check {
             transform-origin: 50% 50%;
             stroke-dasharray: 48;
             stroke-dashoffset: 48;
             animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
         }
-
-        @keyframes stroke {
-            100% { stroke-dashoffset: 0; }
-        }
-
-        @keyframes scale {
-            0%, 100% { transform: none; }
-            50% { transform: scale3d(1.1, 1.1, 1); }
-        }
-
-        @keyframes fill {
-            100% { box-shadow: inset 0px 0px 0px 40px #4CAF50; }
-        }
-
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 40px #4CAF50; } }
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #667eea;
@@ -340,12 +178,7 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error-message {
             background: #ffebee;
             color: #c62828;
@@ -354,11 +187,7 @@
             margin: 10px 0;
             display: none;
         }
-
-        .error-message.show {
-            display: block;
-        }
-
+        .error-message.show { display: block; }
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -371,17 +200,8 @@
             justify-content: center;
             z-index: 1000;
         }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-        }
+        .loading-overlay.show { display: flex; }
+        .loading-content { background: white; padding: 30px; border-radius: 15px; text-align: center; }
     </style>
 </head>
 <body>
@@ -403,32 +223,25 @@
         </div>
 
         <div class="content">
-            <!-- Step 1: Upload Document -->
             <div class="step active" id="step1">
                 <h2 style="margin-bottom: 20px;">Upload Your Document</h2>
-                
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📤</div>
                     <h3>Click or Drag & Drop</h3>
-                    <p style="color: #666; margin-top: 10px;">PDF, DOC, DOCX, PNG, JPG, JPEG (Max 10MB)</p>
-                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                    <p style="color: #666; margin-top: 10px;">PDF, DOC, DOCX (Max 10MB)</p>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx">
                 </div>
-
                 <div class="file-info" id="fileInfo">
                     <div class="file-name" id="fileName"></div>
                     <div id="fileSize"></div>
                     <div id="pageCount"></div>
                 </div>
-
                 <div class="error-message" id="error1"></div>
-
                 <button class="btn btn-primary" id="nextBtn1" disabled>Continue to Print Options</button>
             </div>
 
-            <!-- Step 2: Print Options -->
             <div class="step" id="step2">
                 <h2 style="margin-bottom: 20px;">Print Settings</h2>
-
                 <div class="option-group">
                     <label>Color Mode</label>
                     <div class="radio-group">
@@ -442,7 +255,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>Paper Size</label>
                     <div class="radio-group">
@@ -456,7 +268,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="option-group">
                     <label>Sides</label>
                     <div class="radio-group">
@@ -470,44 +281,34 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="input-group">
                     <label for="copies">Number of Copies</label>
                     <input type="number" id="copies" min="1" max="100" value="1">
                 </div>
-
                 <div class="input-group">
                     <label for="pageRange">Page Range (optional)</label>
                     <input type="text" id="pageRange" placeholder="e.g., 1-5, 8, 10-12">
                 </div>
-
                 <button class="btn btn-secondary" id="backBtn1">Back</button>
                 <button class="btn btn-primary" id="nextBtn2">Continue to Payment</button>
             </div>
 
-            <!-- Step 3: Payment -->
             <div class="step" id="step3">
                 <h2 style="margin-bottom: 20px;">Payment Summary</h2>
-
                 <div class="price-summary" id="priceSummary"></div>
-
                 <div class="input-group">
                     <label for="email">Email (for receipt)</label>
                     <input type="email" id="email" placeholder="your@email.com">
                 </div>
-
                 <div class="input-group">
                     <label for="phone">Phone Number</label>
                     <input type="tel" id="phone" placeholder="+91 XXXXX XXXXX">
                 </div>
-
                 <div class="error-message" id="error3"></div>
-
                 <button class="btn btn-secondary" id="backBtn2">Back</button>
                 <button class="btn btn-primary" id="payBtn">Pay Now</button>
             </div>
 
-            <!-- Step 4: Success -->
             <div class="step" id="step4">
                 <div class="success-animation">
                     <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
@@ -528,32 +329,15 @@
     </div>
 
     <script>
-        // API Configuration - ALWAYS PORT 3000
-        const API_URL = window.location.port === '5500'
-            ? 'http://localhost:3000/api'
-            : '/api';
+        const API_URL = 'http://localhost:3000/api';
         let RAZORPAY_KEY = '';
-
-        // State Management
         let currentStep = 1;
         let uploadedFileId = null;
         let pageCount = 0;
         let currentOrder = null;
-        let printSettings = {
-            color: 'bw',
-            size: 'a4',
-            sides: 'single',
-            copies: 1,
-            pageRange: ''
-        };
+        let printSettings = { color: 'bw', size: 'a4', sides: 'single', copies: 1, pageRange: '' };
+        const PRICING = { bw: 2, color: 8 };
 
-        // Pricing Configuration
-        const PRICING = {
-            bw: 2,
-            color: 8
-        };
-
-        // DOM Elements
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
@@ -562,7 +346,6 @@
         const pageCountElement = document.getElementById('pageCount');
         const loadingOverlay = document.getElementById('loadingOverlay');
 
-        // Initialize
         checkSystemStatus();
         loadRazorpayKey();
 
@@ -572,7 +355,7 @@
                 const data = await response.json();
                 RAZORPAY_KEY = data.razorpayKey;
             } catch (error) {
-                console.error('Failed to load Razorpay key:', error);
+                console.error('Config load failed:', error);
             }
         }
 
@@ -580,7 +363,6 @@
             try {
                 const response = await fetch(`${API_URL}/status`);
                 const data = await response.json();
-
                 const statusDot = document.getElementById('statusDot');
                 const statusText = document.getElementById('statusText');
 
@@ -592,54 +374,31 @@
                     statusText.textContent = 'Offline';
                 }
             } catch (error) {
-                console.error('Status check failed:', error);
                 document.getElementById('statusDot').classList.add('offline');
                 document.getElementById('statusText').textContent = 'Offline';
             }
         }
 
-        // Step 1: File Upload
         uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFileUpload(files[0]);
-            }
+            if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
         });
-
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileUpload(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) handleFileUpload(e.target.files[0]);
         });
 
         async function handleFileUpload(file) {
-            const validTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'image/png',
-                'image/jpeg'
-            ];
+            const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             const maxSize = 10 * 1024 * 1024;
 
             if (!validTypes.includes(file.type)) {
-                showError('error1', 'Please upload a PDF, DOC, PNG, JPG, or JPEG file.');
+                showError('error1', 'Please upload a PDF or DOC file.');
                 return;
             }
-
             if (file.size > maxSize) {
                 showError('error1', 'File size must be less than 10MB.');
                 return;
@@ -658,33 +417,26 @@
                 });
 
                 const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Upload failed');
-                }
+                if (!data.success) throw new Error(data.error || 'Upload failed');
 
                 uploadedFileId = data.file.id;
-                pageCount = data.file.pageCount || 1;
+                pageCount = data.file.pageCount;
 
                 fileName.textContent = data.file.name;
                 fileSize.textContent = `Size: ${(data.file.size / 1024 / 1024).toFixed(2)} MB`;
-                pageCountElement.textContent = file.type.startsWith('image/')
-                    ? 'Pages: 1 (Image)'
-                    : `Pages: ${pageCount}`;
+                pageCountElement.textContent = `Pages: ${pageCount}`;
                 
                 fileInfo.classList.add('show');
                 document.getElementById('nextBtn1').disabled = false;
 
             } catch (error) {
-                console.error('Upload error:', error);
-                showError('error1', error.message || 'Failed to upload file. Please try again.');
+                showError('error1', error.message || 'Failed to upload file.');
             } finally {
                 showLoading(false);
                 uploadArea.classList.remove('uploading');
             }
         }
 
-        // Navigation
         document.getElementById('nextBtn1').addEventListener('click', () => goToStep(2));
         document.getElementById('nextBtn2').addEventListener('click', () => {
             updatePrintSettings();
@@ -711,20 +463,16 @@
         function calculateTotal() {
             const pricePerPage = PRICING[printSettings.color];
             let totalPages = pageCount;
-            
             if (printSettings.pageRange) {
                 totalPages = calculatePageRangeCount(printSettings.pageRange, pageCount);
             }
-            
             return totalPages * printSettings.copies * pricePerPage;
         }
 
         function calculatePageRangeCount(pageRange, maxPages) {
             if (!pageRange) return maxPages;
-
             const ranges = pageRange.split(',');
             let count = 0;
-
             ranges.forEach(range => {
                 range = range.trim();
                 if (range.includes('-')) {
@@ -735,42 +483,26 @@
                     if (page <= maxPages) count++;
                 }
             });
-
             return Math.max(count, 0);
         }
 
         function showPriceSummary() {
             const pricePerPage = PRICING[printSettings.color];
             let totalPages = pageCount;
-            
             if (printSettings.pageRange) {
                 totalPages = calculatePageRangeCount(printSettings.pageRange, pageCount);
             }
-            
             const finalPages = totalPages * printSettings.copies;
             const total = calculateTotal();
 
             document.getElementById('priceSummary').innerHTML = `
-                <div class="price-row">
-                    <span>Pages:</span>
-                    <span>${totalPages} × ${printSettings.copies} copies = ${finalPages} pages</span>
-                </div>
-                <div class="price-row">
-                    <span>Mode:</span>
-                    <span>${printSettings.color === 'bw' ? 'Black & White' : 'Color'}</span>
-                </div>
-                <div class="price-row">
-                    <span>Rate:</span>
-                    <span>₹${pricePerPage}/page</span>
-                </div>
-                <div class="price-row total">
-                    <span>Total:</span>
-                    <span>₹${total}</span>
-                </div>
+                <div class="price-row"><span>Pages:</span><span>${totalPages} × ${printSettings.copies} = ${finalPages} pages</span></div>
+                <div class="price-row"><span>Mode:</span><span>${printSettings.color === 'bw' ? 'Black & White' : 'Color'}</span></div>
+                <div class="price-row"><span>Rate:</span><span>₹${pricePerPage}/page</span></div>
+                <div class="price-row total"><span>Total:</span><span>₹${total}</span></div>
             `;
         }
 
-        // Payment
         document.getElementById('payBtn').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
@@ -779,44 +511,29 @@
                 showError('error3', 'Please provide email and phone number.');
                 return;
             }
-
             if (!validateEmail(email)) {
                 showError('error3', 'Please provide a valid email address.');
                 return;
             }
-
             await createOrder(email, phone);
         });
 
         async function createOrder(email, phone) {
             showLoading(true);
-
             try {
                 const response = await fetch(`${API_URL}/create-order`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fileId: uploadedFileId,
-                        printSettings: printSettings,
-                        email: email,
-                        phone: phone
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileId: uploadedFileId, printSettings, email, phone })
                 });
 
                 const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to create order');
-                }
+                if (!data.success) throw new Error(data.error || 'Failed to create order');
 
                 currentOrder = data.order;
                 initiatePayment(email, phone);
-
             } catch (error) {
-                console.error('Order creation error:', error);
-                showError('error3', error.message || 'Failed to create order. Please try again.');
+                showError('error3', error.message || 'Failed to create order.');
             } finally {
                 showLoading(false);
             }
@@ -830,59 +547,41 @@
                 name: 'PrintMitra',
                 description: 'Print Service Payment',
                 order_id: currentOrder.id,
-                prefill: {
-                    email: email,
-                    contact: phone
-                },
-                theme: {
-                    color: '#667eea'
-                },
-                handler: function(response) {
-                    verifyPayment(response);
-                },
+                prefill: { email, contact: phone },
+                theme: { color: '#667eea' },
+                handler: function(response) { verifyPayment(response); },
                 modal: {
                     ondismiss: function() {
-                        showError('error3', 'Payment cancelled. Please try again.');
+                        showError('error3', 'Payment cancelled.');
                     }
                 }
             };
-
             const rzp = new Razorpay(options);
             rzp.open();
         }
 
         async function verifyPayment(response) {
             showLoading(true);
-
             try {
                 const verifyResponse = await fetch(`${API_URL}/verify-payment`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(response)
                 });
 
                 const data = await verifyResponse.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Payment verification failed');
-                }
+                if (!data.success) throw new Error(data.error || 'Payment verification failed');
 
                 document.getElementById('orderId').textContent = data.order.orderId;
                 document.getElementById('collectionCode').textContent = data.order.collectionCode;
-
                 goToStep(4);
-
             } catch (error) {
-                console.error('Payment verification error:', error);
-                showError('error3', error.message || 'Payment verification failed. Please contact support.');
+                showError('error3', error.message || 'Payment verification failed.');
             } finally {
                 showLoading(false);
             }
         }
 
-        // Utility Functions
         function showLoading(show) {
             loadingOverlay.classList.toggle('show', show);
         }
@@ -898,12 +597,10 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        // Update price when options change
         document.querySelectorAll('input[name="color"], input[name="sides"], #copies').forEach(element => {
             element.addEventListener('change', updatePrintSettings);
         });
 
-        // Periodic status check
         setInterval(checkSystemStatus, 30000);
     </script>
 </body>

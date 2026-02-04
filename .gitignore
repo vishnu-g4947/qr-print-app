@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Environment variables (IMPORTANT - Contains secrets!)
+# Environment variables
 .env
 
 # Database
