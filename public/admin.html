@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Admin Panel</h2>
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Pages</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="jobs"></tbody>
+</table>
+
+<script>
+fetch("/jobs")
+  .then(r => r.json())
+  .then(jobs => {
+    document.getElementById("jobs").innerHTML = jobs.map(j => `
+      <tr>
+        <td>${j.filename}</td>
+        <td>${j.pages}</td>
+        <td>₹${j.cost}</td>
+        <td>${j.status}</td>
+        <td>
+          ${j.status === "PAID" ? `<button onclick="printJob(${j.id})">Print</button>` : ""}
+        </td>
+      </tr>
+    `).join("");
+  });
+
+function printJob(id) {
+  fetch("/print/" + id, { method: "POST" })
+    .then(() => location.reload());
+}
+</script>
+
+</body>
+</html>

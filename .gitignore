@@ -4,25 +4,9 @@ node_modules/
 # Environment variables
 .env
 
-# Database
-*.db
-printmitra.db
-
-# Uploads
+# Uploaded user files
 uploads/
 
-# Logs
-*.log
-npm-debug.log*
-
-# OS files
+# OS / Editor junk
 .DS_Store
-Thumbs.db
-
-# IDE
 .vscode/
-.idea/
-
-# Temporary files
-*.tmp
-*.temp

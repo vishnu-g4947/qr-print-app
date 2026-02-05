@@ -1,0 +1,218 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f9fafb;
+  color: #0f172a;
+}
+
+/* Header */
+.header {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  background: #0a2540;
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.trust {
+  font-size: 14px;
+  color: #475569;
+}
+
+/* Layout */
+.container {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 460px;
+  min-width: 320px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* Card header */
+.card-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.card-header p {
+  margin-top: 8px;
+  color: #475569;
+}
+
+/* Upload */
+.upload-zone {
+  margin-top: 28px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  position: relative;
+}
+
+.upload-zone.dragover {
+  border-color: #0a2540;
+  background: #f1f5f9;
+}
+
+.upload-zone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Preview – FIXED OVERFLOW */
+.preview-placeholder {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.preview-card {
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 6px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.preview-card img,
+.preview-card canvas {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+}
+
+/* Options */
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.option label {
+  font-size: 13px;
+  color: #475569;
+}
+
+.option input,
+.option select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Pricing */
+.pricing {
+  margin-top: 28px;
+}
+
+.price-row,
+.price-total {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.price-total {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 16px 0;
+}
+
+/* Button */
+.pay-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 16px;
+  background: #0a2540;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pay-btn:hover {
+  background: #153a5b;
+}
+
+/* Loader */
+.loader {
+  margin: 16px auto;
+  width: 32px;
+  height: 32px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #0a2540;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.confidence {
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  margin-top: 12px;
+}
