@@ -7,10 +7,21 @@ const Razorpay = require("razorpay");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const cors = require("cors");
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static("public"));
+
+app.get("/", (req, res) => {
+  res.status(200).send("PrintATM backend is running 🚀");
+});
 
 const upload = multer({ dest: "uploads/" });
 
@@ -66,14 +77,22 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 // PAYMENT
 // ==============================
 app.post("/create-order", async (req, res) => {
-  const order = await razorpay.orders.create({
-    amount: req.body.amount * 100,
-    currency: "INR"
-  });
-  res.json(order);
+  try {
+    const order = await razorpay.orders.create({
+      amount: req.body.amount * 100,
+      currency: "INR"
+    });
+    res.json(order);
+  } catch (err) {
+    console.error("Razorpay error:", err);
+    res.status(500).json({ error: "Payment order failed" });
+  }
 });
 
 app.post("/verify-payment/:id", (req, res) => {
+  if (!req.params.id) {
+    return res.status(400).json({ error: "Invalid job ID" });
+  }
   const job = jobs.find(j => j.id == req.params.id);
   job.status = "PAID";
   res.json({ success: true });
@@ -95,5 +114,5 @@ app.post("/print/:id", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
