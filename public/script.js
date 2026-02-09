@@ -156,7 +156,24 @@ async function pay() {
     order_id: order.id,
     name: "PrintATM",
     description: "Smart Printing Payment",
-    handler: () => alert("Payment successful")
+    handler: async function (response) {
+      try {
+        await fetch(`https://printatm-backend.onrender.com/verify-payment/${currentJob.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+
+        alert("Payment successful. Print job confirmed.");
+      } catch (err) {
+        console.error("Payment verification failed", err);
+        alert("Payment succeeded but verification failed. Contact support.");
+      }
+    }
   });
 
   rzp.open();
