@@ -98,6 +98,9 @@ app.post("/verify-payment/:id", (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
 // ==============================
 // ADMIN
 // ==============================
@@ -113,6 +116,7 @@ app.post("/print/:id", (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(PORT, () => {
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
