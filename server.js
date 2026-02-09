@@ -27,10 +27,17 @@ const upload = multer({ dest: "uploads/" });
 
 let jobs = [];
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+let razorpay = null;
+
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.error("❌ Razorpay env vars missing. Server running without payment support.");
+} else {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+  console.log("✅ Razorpay initialized successfully");
+}
 
 // ==============================
 // MULTI FILE UPLOAD
@@ -78,6 +85,10 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 // ==============================
 app.post("/create-order", async (req, res) => {
   try {
+    if (!razorpay) {
+      return res.status(500).json({ error: "Payment service not configured" });
+    }
+
     const order = await razorpay.orders.create({
       amount: req.body.amount * 100,
       currency: "INR"
