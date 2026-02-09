@@ -2,6 +2,11 @@ let selectedFiles = [];
 let currentJob = null;
 
 /* =====================
+   BACKEND CONFIG
+===================== */
+const BACKEND_URL = "https://printatm.up.railway.app";
+
+/* =====================
    GLOBAL DRAG FIX
 ===================== */
 ["dragenter","dragover","dragleave","drop"].forEach(evt => {
@@ -123,7 +128,7 @@ async function upload() {
   formData.append("color", colorSelect.value);
   formData.append("copies", copiesInput.value);
 
-  const res = await fetch("https://printatm-backend.onrender.com", {
+  const res = await fetch(`${BACKEND_URL}`, {
     method: "POST",
     body: formData
   });
@@ -143,7 +148,7 @@ async function upload() {
 async function pay() {
   if (!currentJob || currentJob.cost <= 0) return;
 
-  const order = await fetch("https://printatm-backend.onrender.com", {
+  const order = await fetch(`${BACKEND_URL}/create-order`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amount: currentJob.cost })
@@ -158,7 +163,7 @@ async function pay() {
     description: "Smart Printing Payment",
     handler: async function (response) {
       try {
-        await fetch(`https://printatm-backend.onrender.com/verify-payment/${currentJob.id}`, {
+        await fetch(`${BACKEND_URL}/verify-payment/${currentJob.id}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
